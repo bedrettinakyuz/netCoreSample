@@ -66,7 +66,7 @@ namespace MessagingApp.api
 
             //spa ve api portları farklı olduğundan ikisi 
             //arasında iletişimi sağlamak için eklendi
-            app.UseCors(x=>x.AllowAnyOrigin().AllowAnyMethod().AllowAnyMethod());
+            app.UseCors(x=>x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

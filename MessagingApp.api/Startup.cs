@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MessagingApp.api.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace MessagingApp.api
 {
@@ -30,6 +32,24 @@ namespace MessagingApp.api
             //ConnectionString Buraya
             services.AddControllers();
             services.AddDbContext<DataContext>(x=>x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<IAuthRepository,AuthRepository>();
+          
+          //Authentication ayarları
+            services.AddAuthentication(
+                JwtBearerDefaults.AuthenticationScheme
+            ).AddJwtBearer(
+                options => {
+                    options.TokenValidationParameters = new TokenValidationParameters{
+                        ValidateIssuerSigningKey = true,                        
+                            ValidateIssuer=false,
+                            ValidateAudience=false,
+                           IssuerSigningKey= new SymmetricSecurityKey (System.Text.Encoding.UTF8.GetBytes(Configuration.GetSection("AppSettings:token").Value))                        
+                    };
+
+                }
+
+                
+            );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,9 +68,9 @@ namespace MessagingApp.api
             //arasında iletişimi sağlamak için eklendi
             app.UseCors(x=>x.AllowAnyOrigin().AllowAnyMethod().AllowAnyMethod());
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
-
+           
             
             app.UseEndpoints(endpoints =>
             {
